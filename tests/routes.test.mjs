@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+const base=process.env.QA_BASE_URL||'http://127.0.0.1:3000';
+const paths=['/','/login/','/doctor/dashboard/','/doctor/availability/','/doctor/calendar/','/doctor/patients/','/doctor/mr-requests/','/doctor/prescriptions/','/admin/login/','/admin/dashboard/','/admin/doctors/','/admin/patients/','/admin/partners/','/admin/reports/','/admin/cms/','/logout/','/admin/logout/','/patient/','/patient/login/','/patient/register/','/patient/dashboard/','/patient/profile/','/patient/appointments/','/patient/prescriptions/','/patient/logout/','/pharmacist/login/','/pharmacist/dashboard/','/pharmacist/bills/','/pharmacist/logout/'];
+for(const route of paths)test(`static route ${route} returns HTML`,async()=>{const response=await fetch(base+route);assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/text\/html/);assert.match(await response.text(),/Zass Health/)});
+test('unknown route returns a branded HTTP 404',async()=>{const response=await fetch(base+'/qa-missing-page/');assert.equal(response.status,404);assert.match(await response.text(),/Page not found/)});
+test('production stylesheet is served as CSS',async()=>{const response=await fetch(base+'/'),html=await response.text(),match=html.match(/href="([^\"]+\.css[^\"]*)"/);assert.ok(match);const css=await fetch(new URL(match[1].replaceAll('&amp;','&'),base));assert.equal(css.status,200);assert.match(css.headers.get('content-type'),/text\/css/);assert.match(await css.text(),/report-toolbar/)});
