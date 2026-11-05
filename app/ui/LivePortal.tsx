@@ -16,10 +16,10 @@ export default function LivePortal(){
  const [doctors,setDoctors]=useState<Doctor[]>([]),[mine,setMine]=useState<Doctor|null>(null),[visits,setVisits]=useState<Visit[]>([]),[patients,setPatients]=useState<ApiUser[]>([]),[rx,setRx]=useState<Rx[]>([]),[bills,setBills]=useState<Bill[]>([]),[doctorId,setDoctorId]=useState(''),[date,setDate]=useState(UTCDate()),[slots,setSlots]=useState<{startsAt:string;remaining:number}[]>([]),[slot,setSlot]=useState(''),[menu,setMenu]=useState(false),[search,setSearch]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[medicineRows,setMedicineRows]=useState([0]),[billRows,setBillRows]=useState([0]);
  async function refresh(u:ApiUser){
   const tasks:Promise<void>[]=[];
-  if(['PATIENT','SUPER_ADMIN'].includes(u.role))tasks.push(allPages<Doctor>('/doctors/list'+(u.role==='SUPER_ADMIN'?'?scope=all':'')).then(setDoctors));
+  if(['PATIENT','SUPER_ADMIN'].includes(u.role))tasks.push(allPages<Doctor>(u.role==='SUPER_ADMIN'?'/admin/doctors':'/doctors/list').then(setDoctors));
   if(['PATIENT','DOCTOR','SUPER_ADMIN'].includes(u.role))tasks.push(allPages<Visit>('/appointments/list').then(setVisits));
   if(['PATIENT','DOCTOR'].includes(u.role))tasks.push(allPages<Rx>('/prescriptions').then(setRx));
-  if(['DOCTOR','SUPER_ADMIN'].includes(u.role))tasks.push(allPages<ApiUser>('/users/patients').then(setPatients));
+  if(['DOCTOR','SUPER_ADMIN'].includes(u.role))tasks.push(allPages<ApiUser>(u.role==='SUPER_ADMIN'?'/admin/patients':'/doctors/patients').then(setPatients));
   if(u.role==='DOCTOR')tasks.push(api<Doctor|null>('/doctors/me').then(setMine));
   if(u.role==='PHARMACIST')tasks.push(allPages<Bill>('/pharmacist/bills/list').then(setBills));
   const results=await Promise.allSettled(tasks);const failed=results.find(r=>r.status==='rejected');if(failed?.status==='rejected')throw failed.reason;
